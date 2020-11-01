@@ -1,16 +1,41 @@
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { ImageBackground, StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import { RectButton, ScrollView } from 'react-native-gesture-handler'
+import { Feather } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
+
 import Header from '../components/Header'
 
+import Nota from '../assets/Nota.png'
+
 export default function Main() {
+  const { navigate } = useNavigation()
+
+  function navigateToNewIdea() {
+    navigate('NewIdea')
+  }
   return (
     <ScrollView style={styles.container}>
       <Header />
+
       <View style={styles.buttonNewIdea}>
-        <RectButton style={styles.rectButtonIdea}>
+        <RectButton style={styles.rectButtonIdea} onPress={navigateToNewIdea}>
           <Text style={styles.textButton}>Adicionar uma nova ideia</Text>
         </RectButton>
+      </View>
+
+      <View style={styles.stickyNotes}>
+        <ImageBackground source={Nota} style={styles.stickyImage}>
+          <View style={styles.itemsSticky}>
+            <TouchableOpacity activeOpacity={0.6}>
+              <Text style={styles.titleIdeaText}>Ideia Genial</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.deleteIcon} activeOpacity={0.6}>
+              <Feather name="x" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
       </View>
     </ScrollView>
   )
@@ -51,5 +76,40 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     lineHeight: 35,
+  },
+  stickyNotes: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginHorizontal: 24,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  stickyImage: {
+    resizeMode: 'cover',
+    flexDirection: 'column',
+    alignItems: 'center',
+    height: 140,
+    width: 140,
+    marginTop: 16,
+  },
+  itemsSticky: {
+    height: 124,
+    width: 140,
+    justifyContent: 'space-between',
+    marginVertical: 8,
+    alignItems: 'center',
+  },
+  titleIdeaText: {
+    fontFamily: 'Pacifico_400Regular',
+    color: '#fff',
+    fontSize: 14,
+    lineHeight: 25,
+    textAlign: 'center',
+  },
+  deleteIcon: {
+    alignSelf: 'flex-end',
+    marginRight: 8,
+    marginTop: -8,
   },
 })
