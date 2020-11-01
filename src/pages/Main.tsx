@@ -3,6 +3,7 @@ import { ImageBackground, StyleSheet, Text, View, TouchableOpacity } from 'react
 import { RectButton, ScrollView } from 'react-native-gesture-handler'
 import { Feather } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
+import { colors } from '../styles/colors'
 
 import Header from '../components/Header'
 
@@ -44,7 +45,7 @@ export default function Main() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FCC60E',
+    backgroundColor: colors.background,
   },
   buttonNewIdea: {
     height: 70,
@@ -54,8 +55,8 @@ const styles = StyleSheet.create({
   rectButtonIdea: {
     marginHorizontal: 16,
     borderRadius: 24,
-    backgroundColor: '#581CB0',
-    borderColor: '#6803FC',
+    backgroundColor: colors.purplePrimary,
+    borderColor: colors.purlpleSecondary,
     borderWidth: 1,
     height: 60,
     shadowColor: '#000',
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
   },
   textButton: {
     fontFamily: 'Pacifico_400Regular',
-    color: '#fff',
+    color: colors.whiteText,
     fontSize: 20,
     lineHeight: 35,
   },
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
   },
   titleIdeaText: {
     fontFamily: 'Pacifico_400Regular',
-    color: '#fff',
+    color: colors.whiteText,
     fontSize: 14,
     lineHeight: 25,
     textAlign: 'center',
