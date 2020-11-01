@@ -15,6 +15,11 @@ export default function Main() {
   function navigateToNewIdea() {
     navigate('NewIdea')
   }
+
+  function navigateToEditIdea() {
+    navigate('EditIdea')
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Header />
@@ -28,7 +33,7 @@ export default function Main() {
       <View style={styles.stickyNotes}>
         <ImageBackground source={Nota} style={styles.stickyImage}>
           <View style={styles.itemsSticky}>
-            <TouchableOpacity activeOpacity={0.6}>
+            <TouchableOpacity activeOpacity={0.6} onPress={navigateToEditIdea}>
               <Text style={styles.titleIdeaText}>Ideia Genial</Text>
             </TouchableOpacity>
 
