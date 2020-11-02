@@ -3,6 +3,7 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { View, StyleSheet, Text } from 'react-native'
 import { RectButton, ScrollView, TextInput } from 'react-native-gesture-handler'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as yup from 'yup'
 
 import Header from '../components/Header'
 
@@ -25,6 +26,8 @@ export default function NewIdea() {
   const [ideaName, setIdeaName] = useState<string>('')
   const [ideaDescription, setIdeaDescription] = useState<string>('')
   const [idea, setIdea] = useState<IdeaStorage>()
+  const [errorName, setErrorName] = useState<string>('')
+  const [errorDescription, setErrorDescription] = useState<string>('')
 
   useEffect(() => {
     getIdeaData()
@@ -46,22 +49,40 @@ export default function NewIdea() {
   }
 
   async function saveAndBackToHome() {
-    const ideasStorage: any = await AsyncStorage.getItem('ideas')
-    const ideas: IdeaStorage[] = JSON.parse(ideasStorage)
+    setErrorName('')
+    setErrorDescription('')
+    try {
+      let schema = yup.object().shape({
+        ideaName: yup.string().max(30, 'Limite: 30 caracteres').required('Nome Obrigatório').min(1, 'Nome Obrigatório'),
+        ideaDescription: yup.string().required('Campo Obrigatório'),
+      })
+      await schema.validate({ ideaName, ideaDescription }, { abortEarly: true })
 
-    ideas.forEach(async (ideaStorage, key) => {
-      if (ideaStorage.id === idea?.id) {
-        const updatedIdea: IdeaStorage = {
-          id: ideaStorage.id,
-          ideaName,
-          ideaDescription,
+      const ideasStorage: any = await AsyncStorage.getItem('ideas')
+      const ideas: IdeaStorage[] = JSON.parse(ideasStorage)
+
+      ideas.forEach(async (ideaStorage, key) => {
+        if (ideaStorage.id === idea?.id) {
+          const updatedIdea: IdeaStorage = {
+            id: ideaStorage.id,
+            ideaName,
+            ideaDescription,
+          }
+          ideas.splice(key, 1, updatedIdea)
+          await AsyncStorage.setItem('ideas', JSON.stringify(ideas))
         }
-        ideas.splice(key, 1, updatedIdea)
-        await AsyncStorage.setItem('ideas', JSON.stringify(ideas))
-      }
-    })
+      })
 
-    goBack()
+      goBack()
+    } catch (e) {
+      if (e instanceof yup.ValidationError) {
+        if (e.errors[0] === 'Limite: 30 caracteres' || e.errors[0] === 'Nome Obrigatório') {
+          setErrorName(e.errors[0])
+        } else {
+          setErrorDescription(e.errors[0])
+        }
+      }
+    }
   }
 
   async function deleteAndBackToHome() {
@@ -82,6 +103,12 @@ export default function NewIdea() {
     <ScrollView style={styles.container}>
       <Header />
 
+      {errorName !== '' && (
+        <View style={{ ...styles.titleIdeaView, marginBottom: 8 }}>
+          <Text style={styles.errorText}>{errorName}</Text>
+        </View>
+      )}
+
       <View style={styles.titleIdeaView}>
         <TextInput
           placeholder="Nomeie sua ideia"
@@ -91,6 +118,13 @@ export default function NewIdea() {
           onChangeText={setIdeaName}
         />
       </View>
+
+      {errorDescription !== '' && (
+        <View style={{ ...styles.titleIdeaView, paddingTop: 24, marginBottom: -24 }}>
+          <Text style={styles.errorText}>{errorDescription}</Text>
+        </View>
+      )}
+
       <View style={styles.descriptionIdeaView}>
         <TextInput
           placeholder="Descreva sua ideia"
@@ -215,5 +249,10 @@ const styles = StyleSheet.create({
     color: colors.whiteText,
     fontSize: 20,
     lineHeight: 35,
+  },
+  errorText: {
+    fontFamily: 'Pacifico_400Regular',
+    color: colors.redPrimary,
+    fontSize: 16,
   },
 })
