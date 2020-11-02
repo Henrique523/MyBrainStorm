@@ -1,16 +1,49 @@
+import React, { useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import React from 'react'
 import { View, StyleSheet, Text } from 'react-native'
 import { RectButton, ScrollView, TextInput } from 'react-native-gesture-handler'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 import Header from '../components/Header'
 
 import { colors } from '../styles/colors'
 
+interface IdeaStorage {
+  id: number
+  ideaName: string
+  ideaDescription: string
+}
+
 export default function NewIdea() {
+  const [ideaName, setIdeaName] = useState<string>('')
+  const [ideaDescription, setIdeaDescription] = useState<string>('')
+
   const { goBack } = useNavigation()
 
-  function saveAndBackToHome() {
-    goBack()
+  async function saveAndBackToHome() {
+    const ideasStorage: any = await AsyncStorage.getItem('ideas')
+    const ideas: IdeaStorage[] = JSON.parse(ideasStorage)
+
+    let completeIdea: IdeaStorage
+    if (!ideas || ideas.length === 0) {
+      completeIdea = {
+        id: 1,
+        ideaName,
+        ideaDescription,
+      }
+      let newArrayIdeas: IdeaStorage[] = [completeIdea]
+      await AsyncStorage.setItem('ideas', JSON.stringify(newArrayIdeas))
+      goBack()
+    } else {
+      completeIdea = {
+        id: ideas[ideas.length - 1].id + 1,
+        ideaName,
+        ideaDescription,
+      }
+      ideas.push(completeIdea)
+      await AsyncStorage.setItem('ideas', JSON.stringify(ideas))
+      goBack()
+    }
   }
 
   return (
@@ -18,7 +51,13 @@ export default function NewIdea() {
       <Header />
 
       <View style={styles.titleIdeaView}>
-        <TextInput placeholder="Nomeie sua ideia" style={styles.titleIdeaTextInput} placeholderTextColor="#000" />
+        <TextInput
+          placeholder="Nomeie sua ideia"
+          style={styles.titleIdeaTextInput}
+          placeholderTextColor="#000"
+          value={ideaName}
+          onChangeText={setIdeaName}
+        />
       </View>
       <View style={styles.descriptionIdeaView}>
         <TextInput
@@ -26,6 +65,8 @@ export default function NewIdea() {
           style={styles.descriptionIdeaTextInput}
           placeholderTextColor="#000"
           multiline
+          value={ideaDescription}
+          onChangeText={setIdeaDescription}
         />
       </View>
 

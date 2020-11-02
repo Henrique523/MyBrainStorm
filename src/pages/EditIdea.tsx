@@ -1,19 +1,80 @@
-import { useNavigation } from '@react-navigation/native'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { View, StyleSheet, Text } from 'react-native'
 import { RectButton, ScrollView, TextInput } from 'react-native-gesture-handler'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
 import Header from '../components/Header'
 
 import { colors } from '../styles/colors'
 
+interface IdeaParams {
+  id: number
+}
+
+interface IdeaStorage {
+  id: number
+  ideaName: string
+  ideaDescription: string
+}
+
 export default function NewIdea() {
   const { goBack } = useNavigation()
+  const { params } = useRoute()
 
-  function saveAndBackToHome() {
+  const [ideaName, setIdeaName] = useState<string>('')
+  const [ideaDescription, setIdeaDescription] = useState<string>('')
+  const [idea, setIdea] = useState<IdeaStorage>()
+
+  useEffect(() => {
+    getIdeaData()
+  }, [])
+
+  async function getIdeaData() {
+    const { id } = params as IdeaParams
+
+    const ideasStorage: any = await AsyncStorage.getItem('ideas')
+    const ideas: IdeaStorage[] = JSON.parse(ideasStorage)
+
+    ideas.forEach((idea) => {
+      if (idea.id === id) {
+        setIdeaName(idea.ideaName)
+        setIdeaDescription(idea.ideaDescription)
+        setIdea(idea)
+      }
+    })
+  }
+
+  async function saveAndBackToHome() {
+    const ideasStorage: any = await AsyncStorage.getItem('ideas')
+    const ideas: IdeaStorage[] = JSON.parse(ideasStorage)
+
+    ideas.forEach(async (ideaStorage, key) => {
+      if (ideaStorage.id === idea?.id) {
+        const updatedIdea: IdeaStorage = {
+          id: ideaStorage.id,
+          ideaName,
+          ideaDescription,
+        }
+        ideas.splice(key, 1, updatedIdea)
+        await AsyncStorage.setItem('ideas', JSON.stringify(ideas))
+      }
+    })
+
     goBack()
   }
 
-  function deleteAndBackToHome() {
+  async function deleteAndBackToHome() {
+    const ideasStorage: any = await AsyncStorage.getItem('ideas')
+    const ideas: IdeaStorage[] = JSON.parse(ideasStorage)
+
+    ideas.forEach(async (ideaStorage, key) => {
+      if (ideaStorage.id === idea?.id) {
+        ideas.splice(key, 1)
+        await AsyncStorage.setItem('ideas', JSON.stringify(ideas))
+      }
+    })
+
     goBack()
   }
 
@@ -22,7 +83,13 @@ export default function NewIdea() {
       <Header />
 
       <View style={styles.titleIdeaView}>
-        <TextInput placeholder="Nomeie sua ideia" style={styles.titleIdeaTextInput} placeholderTextColor="#000" />
+        <TextInput
+          placeholder="Nomeie sua ideia"
+          style={styles.titleIdeaTextInput}
+          placeholderTextColor="#000"
+          value={ideaName}
+          onChangeText={setIdeaName}
+        />
       </View>
       <View style={styles.descriptionIdeaView}>
         <TextInput
@@ -30,6 +97,8 @@ export default function NewIdea() {
           style={styles.descriptionIdeaTextInput}
           placeholderTextColor="#000"
           multiline
+          value={ideaDescription}
+          onChangeText={setIdeaDescription}
         />
       </View>
 
